@@ -1,13 +1,14 @@
 [package]
 name = "albino"
-version = "0.1.0-pre"
+version = "0.2.0"
 authors = ["faultier"]
 edition = "2021"
+repository = "https://github.com/wspace/faultier-albino"
 
 [dependencies]
 getopts = "0.2"
 log = "0.4"
-whitebase = { path = "https://github.com/faultier/whitebase.git" }
+whitebase = { git = "https://github.com/wspace/faultier-whitebase" }
 
 [lib]
 name = "albino"
