@@ -1,5 +1,7 @@
+use std::env;
+use std::fs::File;
 use std::io::{self, stdin, stdout, BufRead, BufReader, Read, Write};
-use std::os;
+use std::process::exit;
 
 use getopts::{Matches, Options};
 
@@ -34,12 +36,11 @@ impl<'a, E: Executable> Command<'a, E> {
     }
 
     pub fn exec(&self) {
-        let matches = match self.options.parse(os::args().tail()) {
+        let matches = match self.options.parse(env::args_os().skip(1)) {
             Ok(m) => m,
             Err(e) => {
                 println!("{}", e);
-                os::set_exit_status(1);
-                return;
+                exit(1);
             }
         };
         if matches.opt_present("h") {
@@ -85,7 +86,7 @@ impl<E: RunExecutable> Executable for RunCommand<E> {
         let syntax = m.opt_str("s");
         if !m.free.is_empty() {
             let ref filename = m.free[0];
-            match File::open(&Path::new(filename.as_slice())) {
+            match File::open(filename) {
                 Ok(file) => {
                     let mut buffer = BufReader::new(file);
                     self.inner
@@ -135,7 +136,7 @@ impl<E: BuildExecutable> RunExecutable for BuildCommand<E> {
 
     fn exec<B: BufRead>(&self, m: &Matches, buffer: &mut B, target: Option<Target>) {
         match m.opt_str("o") {
-            Some(ref name) => match File::open_mode(&Path::new(name.as_slice()), Open, Write) {
+            Some(ref name) => match File::create(name) {
                 Ok(ref mut output) => self.inner.exec(m, buffer, output, target),
                 Err(e) => self.inner.handle_error(e),
             },
@@ -172,7 +173,7 @@ impl<E: LoadExecutable> Executable for LoadCommand<E> {
     fn exec(&self, m: &Matches) {
         if !m.free.is_empty() {
             let ref filename = m.free[0];
-            match File::open(&Path::new(filename.as_slice())) {
+            match File::open(filename) {
                 Ok(ref mut file) => self.inner.exec(m, file),
                 Err(e) => self.inner.handle_error(e),
             }
@@ -218,7 +219,7 @@ impl<E: GenerateExecutable> LoadExecutable for GenerateCommand<E> {
     fn exec<R: Read>(&self, m: &Matches, reader: &mut R) {
         let syntax = m.opt_str("s");
         match m.opt_str("o") {
-            Some(ref name) => match File::open_mode(&Path::new(name.as_slice()), Open, Write) {
+            Some(ref name) => match File::create(name) {
                 Ok(ref mut output) => {
                     self.inner
                         .exec(m, reader, output, detect_target(syntax, name))

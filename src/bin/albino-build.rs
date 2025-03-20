@@ -1,5 +1,6 @@
+use std::env;
 use std::io::{self, BufRead, Write};
-use std::os;
+use std::process::exit;
 
 use getopts::{Matches, Options};
 use log::debug;
@@ -12,7 +13,7 @@ fn build<B: BufRead, W: Write, C: Compiler>(input: &mut B, output: &mut W, synta
     match syntax.compile(input, output) {
         Err(e) => {
             println!("{}", e);
-            os::set_exit_status(1);
+            exit(1);
         }
         _ => (),
     }
@@ -23,7 +24,7 @@ struct CommandBody;
 impl BuildExecutable for CommandBody {
     fn handle_error(&self, e: io::Error) {
         println!("{}", e);
-        os::set_exit_status(1);
+        exit(1);
     }
 
     fn exec<B: BufRead, W: Write>(
@@ -43,14 +44,14 @@ impl BuildExecutable for CommandBody {
                 println!(
                     "syntax should be \"asm\", \"bf\", \"dt\", \"ook\" or \"ws\" (default: ws)"
                 );
-                os::set_exit_status(1);
+                exit(1);
             }
         }
     }
 }
 
 fn main() {
-    debug!("executing; cmd=albino-build; args={}", os::args());
+    debug!("executing; cmd=albino-build; args={:?}", env::args_os());
 
     let mut opts = Options::new();
     let cmd = BuildCommand::new(

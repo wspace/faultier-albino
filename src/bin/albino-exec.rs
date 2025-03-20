@@ -1,5 +1,6 @@
+use std::env;
 use std::io::{self, Cursor, Read};
-use std::os;
+use std::process::exit;
 
 use getopts::{Matches, Options};
 use log::debug;
@@ -12,7 +13,7 @@ struct CommandBody;
 impl LoadExecutable for CommandBody {
     fn handle_error(&self, e: io::Error) {
         println!("{}", e);
-        os::set_exit_status(1);
+        exit(1);
     }
 
     fn exec<R: Read>(&self, _: &Matches, input: &mut R) {
@@ -23,8 +24,8 @@ impl LoadExecutable for CommandBody {
                 let mut machine = machine::with_stdio();
                 match machine.run(&mut reader) {
                     Err(e) => {
-                        println!("{}", e);
-                        os::set_exit_status(2);
+                        println!("{:?}", e);
+                        exit(2);
                     }
                     _ => (),
                 }
@@ -35,7 +36,7 @@ impl LoadExecutable for CommandBody {
 }
 
 fn main() {
-    debug!("executing; cmd=albino-exec; args={}", os::args());
+    debug!("executing; cmd=albino-exec; args={:?}", env::args_os());
 
     let mut opts = Options::new();
     let cmd = LoadCommand::new("exec", "[file]", &mut opts, CommandBody);

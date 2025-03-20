@@ -1,5 +1,6 @@
+use std::env;
 use std::io::{self, Cursor, Read, Write};
-use std::os;
+use std::process::exit;
 
 use getopts::{Matches, Options};
 use log::debug;
@@ -16,14 +17,14 @@ fn gen<R: Read, W: Write, D: Decompiler>(input: &mut R, output: &mut W, syntax: 
             match syntax.decompile(&mut reader, output) {
                 Err(e) => {
                     println!("{}", e);
-                    os::set_exit_status(1);
+                    exit(1);
                 }
                 _ => (),
             }
         }
         Err(e) => {
             println!("{}", e);
-            os::set_exit_status(1);
+            exit(1);
         }
     }
 }
@@ -33,7 +34,7 @@ struct CommandBody;
 impl GenerateExecutable for CommandBody {
     fn handle_error(&self, e: io::Error) {
         println!("{}", e);
-        os::set_exit_status(1);
+        exit(1);
     }
 
     fn exec<R: Read, W: Write>(
@@ -49,14 +50,14 @@ impl GenerateExecutable for CommandBody {
             Some(Target::Whitespace) => gen(reader, writer, Whitespace::new()),
             _ => {
                 println!("syntax should be \"asm\", \"dt\" or \"ws\" (default: ws)");
-                os::set_exit_status(1);
+                exit(1);
             }
         }
     }
 }
 
 fn main() {
-    debug!("executing; cmd=albino-gen; args={}", os::args());
+    debug!("executing; cmd=albino-gen; args={:?}", env::args_os());
 
     let mut opts = Options::new();
     let cmd = GenerateCommand::new(
