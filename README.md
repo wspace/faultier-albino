@@ -1,10 +1,11 @@
 Albino
 ================
-[![Build Status](https://travis-ci.org/faultier/albino.svg?branch=master)](https://travis-ci.org/faultier/albino)
 
-This is a compiler front-end for the esoteric languages (Whitespace, Brainfuck, Ook!, [DT](http://faultier.blog.jp/archives/1139763.html)) which is build as part of the [Whitebase](https://github.com/faultier/rust-whitebase) compiler infrastructure project.
+This is a compiler front-end for the esoteric languages (Whitespace, Brainfuck, Ook!, [DT](https://faultier.blog.jp/archives/1139763.html)) which is build as part of the [Whitebase](https://github.com/wspace/faultier-whitebase) compiler infrastructure project.
 
-This tools and Whitebase are written in [Rust](http://www.rust-lang.org/).
+This is a fork of faultier's [Albino](https://github.com/faultier/albino)
+project, which updates it from [Rust](https://www.rust-lang.org/) v0.12.0-pre to
+modern Rust.
 
 ## Features
 
@@ -69,4 +70,4 @@ albino build hello.ook | albino gen -o hello.ws
 ## License
 
 This project distributed under the MIT License.
-http://opensource.org/licenses/MIT
+https://opensource.org/license/MIT
