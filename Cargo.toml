@@ -2,9 +2,12 @@
 name = "albino"
 version = "0.1.0-pre"
 authors = ["faultier"]
+edition = "2021"
 
-[dependencies.whitebase]
-git = "https://github.com/faultier/whitebase.git"
+[dependencies]
+getopts = "0.1"
+log = "0.4"
+whitebase = { path = "https://github.com/faultier/whitebase.git" }
 
 [lib]
 name = "albino"

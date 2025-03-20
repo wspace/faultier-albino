@@ -1,13 +1,8 @@
-extern crate log;
-
-extern crate albino;
-extern crate getopts;
-extern crate whitebase;
-
 use std::io::{IoError, MemReader};
 use std::os;
 
 use getopts::Matches;
+use log::debug;
 use whitebase::syntax::{Assembly, Decompiler, Whitespace, DT};
 
 use albino::command::{GenerateCommand, GenerateExecutable};

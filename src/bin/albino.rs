@@ -1,10 +1,7 @@
-extern crate log;
-
-extern crate albino;
-extern crate whitebase;
-
 use std::io::process::{Command, ExitSignal, ExitStatus, InheritFd};
 use std::os;
+
+use log::debug;
 
 fn main() {
     debug!("executing; cmd=albino; args={}", os::args());

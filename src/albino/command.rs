@@ -3,7 +3,7 @@ use std::os;
 
 use getopts::{getopts, optflag, optopt, Matches, Maybe, No, OptGroup, Yes};
 
-use util::{detect_target, Target};
+use crate::util::{detect_target, Target};
 
 pub trait Executable {
     fn handle_error(&self, e: IoError);

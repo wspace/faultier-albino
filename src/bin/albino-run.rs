@@ -1,13 +1,8 @@
-extern crate log;
-
-extern crate albino;
-extern crate getopts;
-extern crate whitebase;
-
 use std::io::{IoError, MemReader, MemWriter};
 use std::os;
 
 use getopts::Matches;
+use log::debug;
 use whitebase::machine;
 use whitebase::syntax::{Assembly, Brainfuck, Compiler, Ook, Whitespace, DT};
 
