@@ -1,4 +1,4 @@
-use std::io::{IoError, MemReader, MemWriter};
+use std::io::{self, BufRead, Cursor, Seek, SeekFrom};
 use std::os;
 
 use getopts::{Matches, Options};
@@ -9,17 +9,17 @@ use whitebase::syntax::{Assembly, Brainfuck, Compiler, Ook, Whitespace, DT};
 use albino::command::{RunCommand, RunExecutable};
 use albino::util::Target;
 
-fn run<B: Buffer, C: Compiler>(buffer: &mut B, syntax: C) {
-    let mut writer = MemWriter::new();
-    match syntax.compile(buffer, &mut writer) {
+fn run<B: BufRead, C: Compiler>(buffer: &mut B, syntax: C) {
+    let mut bc = Cursor::new(Vec::new());
+    match syntax.compile(buffer, &mut bc) {
         Err(e) => {
             println!("{}", e);
             os::set_exit_status(1);
         }
         _ => {
-            let mut reader = MemReader::new(writer.unwrap());
+            bc.seek(SeekFrom::Start(0)).unwrap();
             let mut machine = machine::with_stdio();
-            match machine.run(&mut reader) {
+            match machine.run(&mut bc) {
                 Err(e) => {
                     println!("{}", e);
                     os::set_exit_status(2);
@@ -33,12 +33,12 @@ fn run<B: Buffer, C: Compiler>(buffer: &mut B, syntax: C) {
 struct CommandBody;
 
 impl RunExecutable for CommandBody {
-    fn handle_error(&self, e: IoError) {
+    fn handle_error(&self, e: io::Error) {
         println!("{}", e);
         os::set_exit_status(1);
     }
 
-    fn exec<B: Buffer>(&self, _: &Matches, buffer: &mut B, target: Option<Target>) {
+    fn exec<B: BufRead>(&self, _: &Matches, buffer: &mut B, target: Option<Target>) {
         match target {
             Some(Target::Assembly) => run(buffer, Assembly::new()),
             Some(Target::Brainfuck) => run(buffer, Brainfuck::new()),

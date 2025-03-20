@@ -1,4 +1,4 @@
-use std::io::{IoError, MemReader};
+use std::io::{self, Cursor, Read, Write};
 use std::os;
 
 use getopts::{Matches, Options};
@@ -8,10 +8,11 @@ use whitebase::syntax::{Assembly, Decompiler, Whitespace, DT};
 use albino::command::{GenerateCommand, GenerateExecutable};
 use albino::util::Target;
 
-fn gen<R: Reader, W: Writer, D: Decompiler>(input: &mut R, output: &mut W, syntax: D) {
-    match input.read_to_end() {
-        Ok(buf) => {
-            let mut reader = MemReader::new(buf);
+fn gen<R: Read, W: Write, D: Decompiler>(input: &mut R, output: &mut W, syntax: D) {
+    let mut buf = Vec::new();
+    match input.read_to_end(&mut buf) {
+        Ok(_) => {
+            let mut reader = Cursor::new(buf);
             match syntax.decompile(&mut reader, output) {
                 Err(e) => {
                     println!("{}", e);
@@ -30,12 +31,12 @@ fn gen<R: Reader, W: Writer, D: Decompiler>(input: &mut R, output: &mut W, synta
 struct CommandBody;
 
 impl GenerateExecutable for CommandBody {
-    fn handle_error(&self, e: IoError) {
+    fn handle_error(&self, e: io::Error) {
         println!("{}", e);
         os::set_exit_status(1);
     }
 
-    fn exec<R: Reader, W: Writer>(
+    fn exec<R: Read, W: Write>(
         &self,
         _: &Matches,
         reader: &mut R,

@@ -1,4 +1,4 @@
-use std::io::IoError;
+use std::io::{self, BufRead, Write};
 use std::os;
 
 use getopts::{Matches, Options};
@@ -8,7 +8,7 @@ use whitebase::syntax::{Assembly, Brainfuck, Compiler, Ook, Whitespace, DT};
 use albino::command::{BuildCommand, BuildExecutable};
 use albino::util::Target;
 
-fn build<B: Buffer, W: Writer, C: Compiler>(input: &mut B, output: &mut W, syntax: C) {
+fn build<B: BufRead, W: Write, C: Compiler>(input: &mut B, output: &mut W, syntax: C) {
     match syntax.compile(input, output) {
         Err(e) => {
             println!("{}", e);
@@ -21,12 +21,12 @@ fn build<B: Buffer, W: Writer, C: Compiler>(input: &mut B, output: &mut W, synta
 struct CommandBody;
 
 impl BuildExecutable for CommandBody {
-    fn handle_error(&self, e: IoError) {
+    fn handle_error(&self, e: io::Error) {
         println!("{}", e);
         os::set_exit_status(1);
     }
 
-    fn exec<B: Buffer, W: Writer>(
+    fn exec<B: BufRead, W: Write>(
         &self,
         _: &Matches,
         buffer: &mut B,

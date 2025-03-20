@@ -1,4 +1,4 @@
-use std::io::{stdin, stdout, BufferedReader, File, IoError, Open, Write};
+use std::io::{self, stdin, stdout, BufRead, BufReader, Read, Write};
 use std::os;
 
 use getopts::{Matches, Options};
@@ -6,7 +6,7 @@ use getopts::{Matches, Options};
 use crate::util::{detect_target, Target};
 
 pub trait Executable {
-    fn handle_error(&self, e: IoError);
+    fn handle_error(&self, e: io::Error);
     fn exec(&self, m: &Matches);
 }
 
@@ -56,8 +56,8 @@ impl<'a, E: Executable> Command<'a, E> {
 }
 
 pub trait RunExecutable {
-    fn handle_error(&self, e: IoError);
-    fn exec<B: Buffer>(&self, m: &Matches, buffer: &mut B, target: Option<Target>);
+    fn handle_error(&self, e: io::Error);
+    fn exec<B: BufRead>(&self, m: &Matches, buffer: &mut B, target: Option<Target>);
 }
 
 pub struct RunCommand<T> {
@@ -77,7 +77,7 @@ impl<E: RunExecutable> RunCommand<E> {
 }
 
 impl<E: RunExecutable> Executable for RunCommand<E> {
-    fn handle_error(&self, e: IoError) {
+    fn handle_error(&self, e: io::Error) {
         self.inner.handle_error(e);
     }
 
@@ -87,22 +87,23 @@ impl<E: RunExecutable> Executable for RunCommand<E> {
             let ref filename = m.free[0];
             match File::open(&Path::new(filename.as_slice())) {
                 Ok(file) => {
-                    let mut buffer = BufferedReader::new(file);
+                    let mut buffer = BufReader::new(file);
                     self.inner
                         .exec(m, &mut buffer, detect_target(syntax, filename));
                 }
                 Err(e) => self.inner.handle_error(e),
             }
         } else {
+            let stdin = stdin();
             self.inner
-                .exec(m, &mut stdin(), detect_target(syntax, &"".to_string()));
+                .exec(m, &mut stdin.lock(), detect_target(syntax, &"".to_string()));
         }
     }
 }
 
 pub trait BuildExecutable {
-    fn handle_error(&self, e: IoError);
-    fn exec<B: Buffer, W: Writer>(
+    fn handle_error(&self, e: io::Error);
+    fn exec<B: BufRead, W: Write>(
         &self,
         m: &Matches,
         buffer: &mut B,
@@ -128,11 +129,11 @@ impl<E: BuildExecutable> BuildCommand<E> {
 }
 
 impl<E: BuildExecutable> RunExecutable for BuildCommand<E> {
-    fn handle_error(&self, e: IoError) {
+    fn handle_error(&self, e: io::Error) {
         self.inner.handle_error(e);
     }
 
-    fn exec<B: Buffer>(&self, m: &Matches, buffer: &mut B, target: Option<Target>) {
+    fn exec<B: BufRead>(&self, m: &Matches, buffer: &mut B, target: Option<Target>) {
         match m.opt_str("o") {
             Some(ref name) => match File::open_mode(&Path::new(name.as_slice()), Open, Write) {
                 Ok(ref mut output) => self.inner.exec(m, buffer, output, target),
@@ -144,8 +145,8 @@ impl<E: BuildExecutable> RunExecutable for BuildCommand<E> {
 }
 
 pub trait LoadExecutable {
-    fn handle_error(&self, e: IoError);
-    fn exec<R: Reader>(&self, m: &Matches, reader: &mut R);
+    fn handle_error(&self, e: io::Error);
+    fn exec<R: Read>(&self, m: &Matches, reader: &mut R);
 }
 
 pub struct LoadCommand<T> {
@@ -164,7 +165,7 @@ impl<E: LoadExecutable> LoadCommand<E> {
 }
 
 impl<E: LoadExecutable> Executable for LoadCommand<E> {
-    fn handle_error(&self, e: IoError) {
+    fn handle_error(&self, e: io::Error) {
         self.inner.handle_error(e);
     }
 
@@ -182,8 +183,8 @@ impl<E: LoadExecutable> Executable for LoadCommand<E> {
 }
 
 pub trait GenerateExecutable {
-    fn handle_error(&self, e: IoError);
-    fn exec<R: Reader, W: Writer>(
+    fn handle_error(&self, e: io::Error);
+    fn exec<R: Read, W: Write>(
         &self,
         m: &Matches,
         reader: &mut R,
@@ -210,11 +211,11 @@ impl<E: GenerateExecutable> GenerateCommand<E> {
 }
 
 impl<E: GenerateExecutable> LoadExecutable for GenerateCommand<E> {
-    fn handle_error(&self, e: IoError) {
+    fn handle_error(&self, e: io::Error) {
         self.inner.handle_error(e);
     }
 
-    fn exec<R: Reader>(&self, m: &Matches, reader: &mut R) {
+    fn exec<R: Read>(&self, m: &Matches, reader: &mut R) {
         let syntax = m.opt_str("s");
         match m.opt_str("o") {
             Some(ref name) => match File::open_mode(&Path::new(name.as_slice()), Open, Write) {
