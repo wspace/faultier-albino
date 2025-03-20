@@ -28,9 +28,9 @@ impl<'a, E: Executable> Command<'a, E> {
     ) -> Command<'a, E> {
         options.optflag("h", "help", "");
         Command {
-            command: command,
-            usage: usage,
-            options: options,
+            command,
+            usage,
+            options,
             inner: exec,
         }
     }
@@ -85,7 +85,7 @@ impl<E: RunExecutable> Executable for RunCommand<E> {
     fn exec(&self, m: &Matches) {
         let syntax = m.opt_str("s");
         if !m.free.is_empty() {
-            let ref filename = m.free[0];
+            let filename = &m.free[0];
             match File::open(filename) {
                 Ok(file) => {
                     let mut buffer = BufReader::new(file);
@@ -97,7 +97,7 @@ impl<E: RunExecutable> Executable for RunCommand<E> {
         } else {
             let stdin = stdin();
             self.inner
-                .exec(m, &mut stdin.lock(), detect_target(syntax, &"".to_string()));
+                .exec(m, &mut stdin.lock(), detect_target(syntax, ""));
         }
     }
 }
@@ -172,7 +172,7 @@ impl<E: LoadExecutable> Executable for LoadCommand<E> {
 
     fn exec(&self, m: &Matches) {
         if !m.free.is_empty() {
-            let ref filename = m.free[0];
+            let filename = &m.free[0];
             match File::open(filename) {
                 Ok(ref mut file) => self.inner.exec(m, file),
                 Err(e) => self.inner.handle_error(e),
@@ -226,12 +226,9 @@ impl<E: GenerateExecutable> LoadExecutable for GenerateCommand<E> {
                 }
                 Err(e) => self.inner.handle_error(e),
             },
-            None => self.inner.exec(
-                m,
-                reader,
-                &mut stdout(),
-                detect_target(syntax, &"".to_string()),
-            ),
+            None => self
+                .inner
+                .exec(m, reader, &mut stdout(), detect_target(syntax, "")),
         }
     }
 }

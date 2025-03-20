@@ -6,7 +6,7 @@ pub enum Target {
     Whitespace,
 }
 
-pub fn detect_target(option: Option<String>, filename: &String) -> Option<Target> {
+pub fn detect_target(option: Option<String>, filename: &str) -> Option<Target> {
     match option {
         Some(ref val) => match val.as_str() {
             "asm" => Some(Target::Assembly),

@@ -20,12 +20,9 @@ fn run<B: BufRead, C: Compiler>(buffer: &mut B, syntax: C) {
         _ => {
             bc.seek(SeekFrom::Start(0)).unwrap();
             let mut machine = machine::with_stdio();
-            match machine.run(&mut bc) {
-                Err(e) => {
-                    println!("{:?}", e);
-                    exit(2);
-                }
-                _ => (),
+            if let Err(e) = machine.run(&mut bc) {
+                println!("{:?}", e);
+                exit(2);
             }
         }
     }

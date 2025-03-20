@@ -10,12 +10,9 @@ use albino::command::{BuildCommand, BuildExecutable};
 use albino::util::Target;
 
 fn build<B: BufRead, W: Write, C: Compiler>(input: &mut B, output: &mut W, syntax: C) {
-    match syntax.compile(input, output) {
-        Err(e) => {
-            println!("{}", e);
-            exit(1);
-        }
-        _ => (),
+    if let Err(e) = syntax.compile(input, output) {
+        println!("{}", e);
+        exit(1);
     }
 }
 

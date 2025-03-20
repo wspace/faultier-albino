@@ -22,12 +22,9 @@ impl LoadExecutable for CommandBody {
             Ok(_) => {
                 let mut reader = Cursor::new(buf);
                 let mut machine = machine::with_stdio();
-                match machine.run(&mut reader) {
-                    Err(e) => {
-                        println!("{:?}", e);
-                        exit(2);
-                    }
-                    _ => (),
+                if let Err(e) = machine.run(&mut reader) {
+                    println!("{:?}", e);
+                    exit(2);
                 }
             }
             Err(e) => self.handle_error(e),

@@ -16,7 +16,7 @@ fn main() {
             println!("  build          # compile the source code file");
             println!("  exec           # execute the bytecode file");
             println!("  run            # build and execute");
-            println!("");
+            println!();
         }
         "--version" | "-v" | "version" => {
             println!(

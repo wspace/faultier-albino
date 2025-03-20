@@ -14,12 +14,9 @@ fn gen<R: Read, W: Write, D: Decompiler>(input: &mut R, output: &mut W, syntax: 
     match input.read_to_end(&mut buf) {
         Ok(_) => {
             let mut reader = Cursor::new(buf);
-            match syntax.decompile(&mut reader, output) {
-                Err(e) => {
-                    println!("{}", e);
-                    exit(1);
-                }
-                _ => (),
+            if let Err(e) = syntax.decompile(&mut reader, output) {
+                println!("{}", e);
+                exit(1);
             }
         }
         Err(e) => {
