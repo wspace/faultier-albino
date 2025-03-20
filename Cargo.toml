@@ -8,7 +8,7 @@ authors = ["faultier"]
 
 git = "https://github.com/faultier/whitebase.git"
 
-[[lib]]
+[lib]
 
 name = "albino"
 path = "src/albino/lib.rs"
