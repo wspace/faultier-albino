@@ -6,7 +6,6 @@ use log::debug;
 use whitebase::syntax::{Assembly, Decompiler, Whitespace, DT};
 
 use albino::command::{GenerateCommand, GenerateExecutable};
-use albino::util;
 use albino::util::Target;
 
 fn gen<R: Reader, W: Writer, D: Decompiler>(input: &mut R, output: &mut W, syntax: D) {
@@ -44,9 +43,9 @@ impl GenerateExecutable for CommandBody {
         target: Option<Target>,
     ) {
         match target {
-            Some(util::Assembly) => gen(reader, writer, Assembly::new()),
-            Some(util::DT) => gen(reader, writer, DT::new()),
-            Some(util::Whitespace) => gen(reader, writer, Whitespace::new()),
+            Some(Target::Assembly) => gen(reader, writer, Assembly::new()),
+            Some(Target::DT) => gen(reader, writer, DT::new()),
+            Some(Target::Whitespace) => gen(reader, writer, Whitespace::new()),
             _ => {
                 println!("syntax should be \"asm\", \"dt\" or \"ws\" (default: ws)");
                 os::set_exit_status(1);

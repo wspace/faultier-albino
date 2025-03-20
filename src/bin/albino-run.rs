@@ -7,7 +7,6 @@ use whitebase::machine;
 use whitebase::syntax::{Assembly, Brainfuck, Compiler, Ook, Whitespace, DT};
 
 use albino::command::{RunCommand, RunExecutable};
-use albino::util;
 use albino::util::Target;
 
 fn run<B: Buffer, C: Compiler>(buffer: &mut B, syntax: C) {
@@ -41,11 +40,11 @@ impl RunExecutable for CommandBody {
 
     fn exec<B: Buffer>(&self, _: &Matches, buffer: &mut B, target: Option<Target>) {
         match target {
-            Some(util::Assembly) => run(buffer, Assembly::new()),
-            Some(util::Brainfuck) => run(buffer, Brainfuck::new()),
-            Some(util::DT) => run(buffer, DT::new()),
-            Some(util::Ook) => run(buffer, Ook::new()),
-            Some(util::Whitespace) => run(buffer, Whitespace::new()),
+            Some(Target::Assembly) => run(buffer, Assembly::new()),
+            Some(Target::Brainfuck) => run(buffer, Brainfuck::new()),
+            Some(Target::DT) => run(buffer, DT::new()),
+            Some(Target::Ook) => run(buffer, Ook::new()),
+            Some(Target::Whitespace) => run(buffer, Whitespace::new()),
             None => {
                 println!(
                     "syntax should be \"asm\", \"bf\", \"dt\", \"ook\" or \"ws\" (default: ws)"
