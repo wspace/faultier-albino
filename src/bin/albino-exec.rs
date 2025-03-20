@@ -1,7 +1,7 @@
 use std::io::{IoError, MemReader};
 use std::os;
 
-use getopts::Matches;
+use getopts::{Matches, Options};
 use log::debug;
 use whitebase::machine;
 
@@ -36,7 +36,7 @@ impl LoadExecutable for CommandBody {
 fn main() {
     debug!("executing; cmd=albino-exec; args={}", os::args());
 
-    let mut opts = vec![];
+    let mut opts = Options::new();
     let cmd = LoadCommand::new("exec", "[file]", &mut opts, CommandBody);
     cmd.exec();
 }

@@ -1,7 +1,7 @@
 use std::io::IoError;
 use std::os;
 
-use getopts::Matches;
+use getopts::{Matches, Options};
 use log::debug;
 use whitebase::syntax::{Assembly, Brainfuck, Compiler, Ook, Whitespace, DT};
 
@@ -52,7 +52,7 @@ impl BuildExecutable for CommandBody {
 fn main() {
     debug!("executing; cmd=albino-build; args={}", os::args());
 
-    let mut opts = vec![];
+    let mut opts = Options::new();
     let cmd = BuildCommand::new(
         "build",
         "[-s syntax] [-o output] [file]",

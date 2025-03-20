@@ -5,7 +5,7 @@ authors = ["faultier"]
 edition = "2021"
 
 [dependencies]
-getopts = "0.1"
+getopts = "0.2"
 log = "0.4"
 whitebase = { path = "https://github.com/faultier/whitebase.git" }
 

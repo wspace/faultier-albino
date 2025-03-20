@@ -1,7 +1,7 @@
 use std::io::{IoError, MemReader};
 use std::os;
 
-use getopts::Matches;
+use getopts::{Matches, Options};
 use log::debug;
 use whitebase::syntax::{Assembly, Decompiler, Whitespace, DT};
 
@@ -57,7 +57,7 @@ impl GenerateExecutable for CommandBody {
 fn main() {
     debug!("executing; cmd=albino-gen; args={}", os::args());
 
-    let mut opts = vec![];
+    let mut opts = Options::new();
     let cmd = GenerateCommand::new(
         "gen",
         "[-s syntax] [-o output] [file]",

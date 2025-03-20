@@ -1,7 +1,7 @@
 use std::io::{stdin, stdout, BufferedReader, File, IoError, Open, Write};
 use std::os;
 
-use getopts::{getopts, optflag, optopt, Matches, Maybe, No, OptGroup, Yes};
+use getopts::{Matches, Options};
 
 use crate::util::{detect_target, Target};
 
@@ -13,7 +13,7 @@ pub trait Executable {
 pub struct Command<'a, T> {
     command: &'static str,
     usage: &'static str,
-    options: &'a mut Vec<OptGroup>,
+    options: &'a mut Options,
     inner: T,
 }
 
@@ -21,10 +21,10 @@ impl<'a, E: Executable> Command<'a, E> {
     pub fn new(
         command: &'static str,
         usage: &'static str,
-        options: &'a mut Vec<OptGroup>,
+        options: &'a mut Options,
         exec: E,
     ) -> Command<'a, E> {
-        options.push(optflag("h", "help", ""));
+        options.optflag("h", "help", "");
         Command {
             command: command,
             usage: usage,
@@ -34,7 +34,7 @@ impl<'a, E: Executable> Command<'a, E> {
     }
 
     pub fn exec(&self) {
-        let matches = match getopts(os::args().tail(), self.options.as_slice()) {
+        let matches = match self.options.parse(os::args().tail()) {
             Ok(m) => m,
             Err(e) => {
                 println!("{}", e);
@@ -50,28 +50,8 @@ impl<'a, E: Executable> Command<'a, E> {
     }
 
     fn print_usage(&self) {
-        println!("usage: albino {} {}", self.command, self.usage);
-        println!("\nOptions:");
-        for opt in self.options.iter() {
-            print!("\t-{}", opt.short_name);
-            if opt.long_name.len() > 0 {
-                print!(", --{}", opt.long_name)
-            }
-            match opt.hasarg {
-                Yes => {
-                    print!(" {}", opt.hint)
-                }
-                Maybe => {
-                    print!(" [{}]", opt.hint)
-                }
-                No => (),
-            }
-            if opt.desc.len() > 0 {
-                println!("\n\t\t{}", opt.desc)
-            } else {
-                println!("")
-            }
-        }
+        let brief = format!("usage: albino {} {}", self.command, self.usage);
+        print!("{}", self.options.usage(&brief));
     }
 }
 
@@ -88,10 +68,10 @@ impl<E: RunExecutable> RunCommand<E> {
     pub fn new<'a>(
         command: &'static str,
         usage: &'static str,
-        options: &'a mut Vec<OptGroup>,
+        options: &'a mut Options,
         exec: E,
     ) -> Command<'a, RunCommand<E>> {
-        options.push(optopt("s", "syntax", "set input file syntax", "syntax"));
+        options.optopt("s", "syntax", "set input file syntax", "syntax");
         Command::new(command, usage, options, RunCommand { inner: exec })
     }
 }
@@ -139,10 +119,10 @@ impl<E: BuildExecutable> BuildCommand<E> {
     pub fn new<'a>(
         command: &'static str,
         usage: &'static str,
-        options: &'a mut Vec<OptGroup>,
+        options: &'a mut Options,
         exec: E,
     ) -> Command<'a, RunCommand<BuildCommand<E>>> {
-        options.push(optopt("o", "", "set output file name", "name"));
+        options.optopt("o", "", "set output file name", "name");
         RunCommand::new(command, usage, options, BuildCommand { inner: exec })
     }
 }
@@ -176,7 +156,7 @@ impl<E: LoadExecutable> LoadCommand<E> {
     pub fn new<'a>(
         command: &'static str,
         usage: &'static str,
-        options: &'a mut Vec<OptGroup>,
+        options: &'a mut Options,
         exec: E,
     ) -> Command<'a, LoadCommand<E>> {
         Command::new(command, usage, options, LoadCommand { inner: exec })
@@ -220,11 +200,11 @@ impl<E: GenerateExecutable> GenerateCommand<E> {
     pub fn new<'a>(
         command: &'static str,
         usage: &'static str,
-        options: &'a mut Vec<OptGroup>,
+        options: &'a mut Options,
         exec: E,
     ) -> Command<'a, LoadCommand<GenerateCommand<E>>> {
-        options.push(optopt("s", "syntax", "set input file syntax", "syntax"));
-        options.push(optopt("o", "", "set output file name", "name"));
+        options.optopt("s", "syntax", "set input file syntax", "syntax");
+        options.optopt("o", "", "set output file name", "name");
         LoadCommand::new(command, usage, options, GenerateCommand { inner: exec })
     }
 }

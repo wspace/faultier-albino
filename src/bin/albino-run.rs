@@ -1,7 +1,7 @@
 use std::io::{IoError, MemReader, MemWriter};
 use std::os;
 
-use getopts::Matches;
+use getopts::{Matches, Options};
 use log::debug;
 use whitebase::machine;
 use whitebase::syntax::{Assembly, Brainfuck, Compiler, Ook, Whitespace, DT};
@@ -58,7 +58,7 @@ impl RunExecutable for CommandBody {
 fn main() {
     debug!("executing; cmd=albino-run; args={}", os::args());
 
-    let mut opts = vec![];
+    let mut opts = Options::new();
     let cmd = RunCommand::new("run", "[-s syntax] [file]", &mut opts, CommandBody);
     cmd.exec();
 }
