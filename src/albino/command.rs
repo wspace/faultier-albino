@@ -6,8 +6,8 @@ use getopts::{getopts, optflag, optopt, Matches, Maybe, No, OptGroup, Yes};
 use util::{detect_target, Target};
 
 pub trait Executable {
-    fn handle_error(&self, IoError);
-    fn exec(&self, &Matches);
+    fn handle_error(&self, e: IoError);
+    fn exec(&self, m: &Matches);
 }
 
 pub struct Command<'a, T> {
@@ -76,8 +76,8 @@ impl<'a, E: Executable> Command<'a, E> {
 }
 
 pub trait RunExecutable {
-    fn handle_error(&self, IoError);
-    fn exec<B: Buffer>(&self, &Matches, &mut B, Option<Target>);
+    fn handle_error(&self, e: IoError);
+    fn exec<B: Buffer>(&self, m: &Matches, buffer: &mut B, target: Option<Target>);
 }
 
 pub struct RunCommand<T> {
@@ -121,8 +121,14 @@ impl<E: RunExecutable> Executable for RunCommand<E> {
 }
 
 pub trait BuildExecutable {
-    fn handle_error(&self, IoError);
-    fn exec<B: Buffer, W: Writer>(&self, &Matches, &mut B, &mut W, Option<Target>);
+    fn handle_error(&self, e: IoError);
+    fn exec<B: Buffer, W: Writer>(
+        &self,
+        m: &Matches,
+        buffer: &mut B,
+        writer: &mut W,
+        target: Option<Target>,
+    );
 }
 
 pub struct BuildCommand<T> {
@@ -158,8 +164,8 @@ impl<E: BuildExecutable> RunExecutable for BuildCommand<E> {
 }
 
 pub trait LoadExecutable {
-    fn handle_error(&self, IoError);
-    fn exec<R: Reader>(&self, &Matches, &mut R);
+    fn handle_error(&self, e: IoError);
+    fn exec<R: Reader>(&self, m: &Matches, reader: &mut R);
 }
 
 pub struct LoadCommand<T> {
@@ -196,8 +202,14 @@ impl<E: LoadExecutable> Executable for LoadCommand<E> {
 }
 
 pub trait GenerateExecutable {
-    fn handle_error(&self, IoError);
-    fn exec<R: Reader, W: Writer>(&self, &Matches, &mut R, &mut W, Option<Target>);
+    fn handle_error(&self, e: IoError);
+    fn exec<R: Reader, W: Writer>(
+        &self,
+        m: &Matches,
+        reader: &mut R,
+        writer: &mut W,
+        target: Option<Target>,
+    );
 }
 
 pub struct GenerateCommand<T> {

@@ -62,7 +62,7 @@ fn process(args: Vec<String>) -> (String, Vec<String>) {
     (head, args)
 }
 
-fn handle_error<'a>(message: &'a str, exit: int) {
+fn handle_error<'a>(message: &'a str, exit: isize) {
     println!("{}", message);
     os::set_exit_status(exit)
 }
