@@ -1,74 +1,62 @@
-#![crate_name="albino-run"]
-#![crate_type="bin"]
-#![feature(phase)]
-#![unstable]
+use std::env;
+use std::io::{self, BufRead, Cursor, Seek, SeekFrom};
+use std::process::exit;
 
-#[phase(plugin, link)] extern crate log;
-
-extern crate getopts;
-extern crate whitebase;
-extern crate albino;
-
-use getopts::Matches;
-use std::os;
-use std::io::{IoError, MemReader, MemWriter};
+use getopts::{Matches, Options};
+use log::debug;
 use whitebase::machine;
-use whitebase::syntax::{Compiler, Assembly, Brainfuck, DT, Ook, Whitespace};
+use whitebase::syntax::{Assembly, Brainfuck, Compiler, Ook, Whitespace, DT};
 
 use albino::command::{RunCommand, RunExecutable};
-use albino::util;
 use albino::util::Target;
 
-fn run<B: Buffer, C: Compiler>(buffer: &mut B, syntax: C) {
-    let mut writer = MemWriter::new();
-    match syntax.compile(buffer, &mut writer) {
+fn run<B: BufRead, C: Compiler>(buffer: &mut B, syntax: C) {
+    let mut bc = Cursor::new(Vec::new());
+    match syntax.compile(buffer, &mut bc) {
         Err(e) => {
             println!("{}", e);
-            os::set_exit_status(1);
+            exit(1);
         }
         _ => {
-            let mut reader = MemReader::new(writer.unwrap());
+            bc.seek(SeekFrom::Start(0)).unwrap();
             let mut machine = machine::with_stdio();
-            match machine.run(&mut reader) {
-                Err(e) => {
-                    println!("{}", e);
-                    os::set_exit_status(2);
-                }
-                _ => (),
+            if let Err(e) = machine.run(&mut bc) {
+                println!("{:?}", e);
+                exit(2);
             }
-        },
+        }
     }
 }
 
 struct CommandBody;
 
 impl RunExecutable for CommandBody {
-    fn handle_error(&self, e: IoError) {
+    fn handle_error(&self, e: io::Error) {
         println!("{}", e);
-        os::set_exit_status(1);
+        exit(1);
     }
 
-    fn exec<B: Buffer>(&self, _: &Matches, buffer: &mut B, target: Option<Target>) {
+    fn exec<B: BufRead>(&self, _: &Matches, buffer: &mut B, target: Option<Target>) {
         match target {
-            Some(util::Assembly)   => run(buffer, Assembly::new()),
-            Some(util::Brainfuck)  => run(buffer, Brainfuck::new()),
-            Some(util::DT)         => run(buffer, DT::new()),
-            Some(util::Ook)        => run(buffer, Ook::new()),
-            Some(util::Whitespace) => run(buffer, Whitespace::new()),
+            Some(Target::Assembly) => run(buffer, Assembly::new()),
+            Some(Target::Brainfuck) => run(buffer, Brainfuck::new()),
+            Some(Target::DT) => run(buffer, DT::new()),
+            Some(Target::Ook) => run(buffer, Ook::new()),
+            Some(Target::Whitespace) => run(buffer, Whitespace::new()),
             None => {
-                println!("syntax should be \"asm\", \"bf\", \"dt\", \"ook\" or \"ws\" (default: ws)");
-                os::set_exit_status(1);
-            },
+                println!(
+                    "syntax should be \"asm\", \"bf\", \"dt\", \"ook\" or \"ws\" (default: ws)"
+                );
+                exit(1);
+            }
         }
     }
 }
 
 fn main() {
-    debug!("executing; cmd=albino-run; args={}", os::args());
+    debug!("executing; cmd=albino-run; args={:?}", env::args_os());
 
-    let mut opts = vec!();
-    let cmd = RunCommand::new("run",
-                              "[-s syntax] [file]",
-                              &mut opts, CommandBody);
+    let mut opts = Options::new();
+    let cmd = RunCommand::new("run", "[-s syntax] [file]", &mut opts, CommandBody);
     cmd.exec();
 }

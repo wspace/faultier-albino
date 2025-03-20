@@ -1,40 +1,35 @@
 [package]
-
 name = "albino"
 version = "0.1.0-pre"
 authors = ["faultier"]
+edition = "2021"
 
-[dependencies.whitebase]
+[dependencies]
+getopts = "0.2"
+log = "0.4"
+whitebase = { path = "https://github.com/faultier/whitebase.git" }
 
-git = "https://github.com/faultier/whitebase.git"
-
-[[lib]]
-
+[lib]
 name = "albino"
 path = "src/albino/lib.rs"
 
 [[bin]]
-
 name = "albino-run"
 path = "src/bin/albino-run.rs"
 
 [[bin]]
-
 name = "albino-build"
 path = "src/bin/albino-build.rs"
 
 [[bin]]
-
 name = "albino-exec"
 path = "src/bin/albino-exec.rs"
 
 [[bin]]
-
 name = "albino-gen"
 path = "src/bin/albino-gen.rs"
 
 
 [[bin]]
-
 name = "albino"
 path = "src/bin/albino.rs"

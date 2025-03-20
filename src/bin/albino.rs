@@ -1,68 +1,65 @@
-#![crate_name="albino"]
-#![crate_type="bin"]
-#![feature(phase)]
+use std::env;
+use std::process::{exit, Command, Stdio};
 
-#[phase(plugin, link)] extern crate log;
-
-extern crate whitebase;
-extern crate albino;
-
-use std::os;
-use std::io::process::{Command,InheritFd,ExitStatus,ExitSignal};
+use log::debug;
 
 fn main() {
-    debug!("executing; cmd=albino; args={}", os::args());
+    let mut args = env::args();
+    debug!("executing; cmd=albino; args={:?}", args);
 
-    let (cmd, args) = process(os::args());
+    let cmd = args.nth(1).unwrap_or_else(|| "--help".into());
+    let args = args.collect::<Vec<_>>();
 
-    match cmd.as_slice() {
+    match cmd.as_str() {
         "--help" | "-h" | "help" | "-?" => {
             println!("Commands:");
             println!("  build          # compile the source code file");
             println!("  exec           # execute the bytecode file");
             println!("  run            # build and execute");
-            println!("");
+            println!();
         }
         "--version" | "-v" | "version" => {
-            println!("albino {}, whitebase {}", albino::version(), whitebase::version());
+            println!(
+                "albino {}, whitebase {}",
+                albino::version(),
+                whitebase::version()
+            );
         }
         _ => {
-            let command = format!("albino-{}{}", cmd, os::consts::EXE_SUFFIX);
-            let mut command = match os::self_exe_path() {
-                Some(path) => {
-                    let p = path.join(command.as_slice());
+            let current_exe = env::current_exe();
+            let exe_suffix = current_exe
+                .as_ref()
+                .ok()
+                .and_then(|name| name.extension())
+                .and_then(|exe| exe.to_str())
+                .unwrap_or_default();
+            let command = format!("albino-{}{}", cmd, exe_suffix);
+            let mut command = match current_exe {
+                Ok(path) => {
+                    let p = path.parent().unwrap_or(&path).join(&command);
                     if p.exists() {
                         Command::new(p)
                     } else {
-                        Command::new(command)
+                        Command::new(&command)
                     }
                 }
-                None => Command::new(command),
+                Err(_) => Command::new(&command),
             };
             let command = command
                 .args(args.as_slice())
-                .stdin(InheritFd(0))
-                .stdout(InheritFd(1))
-                .stderr(InheritFd(2))
+                .stdin(Stdio::inherit())
+                .stdout(Stdio::inherit())
+                .stderr(Stdio::inherit())
                 .status();
 
             match command {
-                Ok(ExitStatus(0)) => (),
-                Ok(ExitStatus(i)) | Ok(ExitSignal(i)) => handle_error("", i),
-                Err(_) => handle_error("no such command.", 127),
+                Ok(status) if status.success() => {}
+                Ok(status) => exit(status.code().unwrap_or(127)),
+                Err(err) => {
+                    println!("{err}");
+                    exit(127);
+                }
             }
         }
     }
-}
-
-fn process(args: Vec<String>) -> (String, Vec<String>) {
-    let mut args = Vec::from_slice(args.tail());
-    let head = args.shift().unwrap_or("--help".to_string());
-
-    (head, args)
-}
-
-fn handle_error<'a>(message: &'a str, exit: int) {
-    println!("{}", message);
-    os::set_exit_status(exit)
 }
