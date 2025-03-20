@@ -1,9 +1,3 @@
-#![crate_name = "albino-gen"]
-#![crate_type = "bin"]
-#![feature(phase)]
-#![unstable]
-
-#[phase(plugin, link)]
 extern crate log;
 
 extern crate albino;

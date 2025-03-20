@@ -1,5 +1,3 @@
-#![unstable]
-
 pub enum Target {
     Assembly,
     Brainfuck,

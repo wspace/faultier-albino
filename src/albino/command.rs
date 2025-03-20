@@ -1,5 +1,3 @@
-#![experimental]
-
 use std::io::{stdin, stdout, BufferedReader, File, IoError, Open, Write};
 use std::os;
 

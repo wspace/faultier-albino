@@ -1,10 +1,4 @@
-#![crate_name = "albino"]
-#![crate_type = "rlib"]
-#![feature(phase)]
-#![unstable]
-
 extern crate getopts;
-#[phase(plugin, link)]
 extern crate log;
 
 pub static VERSION_MAJOR: uint = 0;
