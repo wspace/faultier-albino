@@ -12,11 +12,11 @@ pub fn detect_target(option: Option<String>, filename: &String) -> Option<Target
     match option {
         Some(ref val) => match val.as_slice() {
             "asm" => Some(Assembly),
-            "bf"  => Some(Brainfuck),
-            "dt"  => Some(DT),
+            "bf" => Some(Brainfuck),
+            "dt" => Some(DT),
             "ook" => Some(Ook),
-            "ws"  => Some(Whitespace),
-            _     => None,
+            "ws" => Some(Whitespace),
+            _ => None,
         },
         None => {
             let slice = filename.as_slice();
@@ -26,12 +26,12 @@ pub fn detect_target(option: Option<String>, filename: &String) -> Option<Target
             } else {
                 match *comps.last().unwrap() {
                     "asm" => Some(Assembly),
-                    "bf"  => Some(Brainfuck),
-                    "dt"  => Some(DT),
+                    "bf" => Some(Brainfuck),
+                    "dt" => Some(DT),
                     "ook" => Some(Ook),
-                    _     => Some(Whitespace),
+                    _ => Some(Whitespace),
                 }
             }
-        },
+        }
     }
 }

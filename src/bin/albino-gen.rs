@@ -1,18 +1,20 @@
-#![crate_name="albino-gen"]
-#![crate_type="bin"]
+#![crate_name = "albino-gen"]
+#![crate_type = "bin"]
 #![feature(phase)]
 #![unstable]
 
-#[phase(plugin, link)] extern crate log;
+#[phase(plugin, link)]
+extern crate log;
 
+extern crate albino;
 extern crate getopts;
 extern crate whitebase;
-extern crate albino;
+
+use std::io::{IoError, MemReader};
+use std::os;
 
 use getopts::Matches;
-use std::os;
-use std::io::{IoError, MemReader};
-use whitebase::syntax::{Decompiler, Assembly, DT, Whitespace};
+use whitebase::syntax::{Assembly, Decompiler, Whitespace, DT};
 
 use albino::command::{GenerateCommand, GenerateExecutable};
 use albino::util;
@@ -26,14 +28,14 @@ fn gen<R: Reader, W: Writer, D: Decompiler>(input: &mut R, output: &mut W, synta
                 Err(e) => {
                     println!("{}", e);
                     os::set_exit_status(1);
-                },
+                }
                 _ => (),
             }
-        },
+        }
         Err(e) => {
             println!("{}", e);
             os::set_exit_status(1);
-        },
+        }
     }
 }
 
@@ -45,15 +47,21 @@ impl GenerateExecutable for CommandBody {
         os::set_exit_status(1);
     }
 
-    fn exec<R: Reader, W: Writer>(&self, _: &Matches, reader: &mut R, writer: &mut W, target: Option<Target>) {
+    fn exec<R: Reader, W: Writer>(
+        &self,
+        _: &Matches,
+        reader: &mut R,
+        writer: &mut W,
+        target: Option<Target>,
+    ) {
         match target {
-            Some(util::Assembly)   => gen(reader, writer, Assembly::new()),
-            Some(util::DT)         => gen(reader, writer, DT::new()),
+            Some(util::Assembly) => gen(reader, writer, Assembly::new()),
+            Some(util::DT) => gen(reader, writer, DT::new()),
             Some(util::Whitespace) => gen(reader, writer, Whitespace::new()),
             _ => {
                 println!("syntax should be \"asm\", \"dt\" or \"ws\" (default: ws)");
                 os::set_exit_status(1);
-            },
+            }
         }
     }
 }
@@ -61,9 +69,12 @@ impl GenerateExecutable for CommandBody {
 fn main() {
     debug!("executing; cmd=albino-gen; args={}", os::args());
 
-    let mut opts = vec!();
-    let cmd = GenerateCommand::new("gen",
-                                "[-s syntax] [-o output] [file]",
-                                &mut opts, CommandBody);
+    let mut opts = vec![];
+    let cmd = GenerateCommand::new(
+        "gen",
+        "[-s syntax] [-o output] [file]",
+        &mut opts,
+        CommandBody,
+    );
     cmd.exec();
 }

@@ -1,14 +1,15 @@
-#![crate_name="albino"]
-#![crate_type="bin"]
+#![crate_name = "albino"]
+#![crate_type = "bin"]
 #![feature(phase)]
 
-#[phase(plugin, link)] extern crate log;
+#[phase(plugin, link)]
+extern crate log;
 
-extern crate whitebase;
 extern crate albino;
+extern crate whitebase;
 
+use std::io::process::{Command, ExitSignal, ExitStatus, InheritFd};
 use std::os;
-use std::io::process::{Command,InheritFd,ExitStatus,ExitSignal};
 
 fn main() {
     debug!("executing; cmd=albino; args={}", os::args());
@@ -24,7 +25,11 @@ fn main() {
             println!("");
         }
         "--version" | "-v" | "version" => {
-            println!("albino {}, whitebase {}", albino::version(), whitebase::version());
+            println!(
+                "albino {}, whitebase {}",
+                albino::version(),
+                whitebase::version()
+            );
         }
         _ => {
             let command = format!("albino-{}{}", cmd, os::consts::EXE_SUFFIX);

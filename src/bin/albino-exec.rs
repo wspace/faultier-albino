@@ -1,17 +1,19 @@
-#![crate_name="albino-exec"]
-#![crate_type="bin"]
+#![crate_name = "albino-exec"]
+#![crate_type = "bin"]
 #![feature(phase)]
 #![unstable]
 
-#[phase(plugin, link)] extern crate log;
+#[phase(plugin, link)]
+extern crate log;
 
+extern crate albino;
 extern crate getopts;
 extern crate whitebase;
-extern crate albino;
+
+use std::io::{IoError, MemReader};
+use std::os;
 
 use getopts::Matches;
-use std::os;
-use std::io::{IoError, MemReader};
 use whitebase::machine;
 
 use albino::command::{LoadCommand, LoadExecutable};
@@ -36,7 +38,7 @@ impl LoadExecutable for CommandBody {
                     }
                     _ => (),
                 }
-            },
+            }
             Err(e) => self.handle_error(e),
         }
     }
@@ -45,9 +47,7 @@ impl LoadExecutable for CommandBody {
 fn main() {
     debug!("executing; cmd=albino-exec; args={}", os::args());
 
-    let mut opts = vec!();
-    let cmd = LoadCommand::new("exec",
-                              "[file]",
-                              &mut opts, CommandBody);
+    let mut opts = vec![];
+    let cmd = LoadCommand::new("exec", "[file]", &mut opts, CommandBody);
     cmd.exec();
 }

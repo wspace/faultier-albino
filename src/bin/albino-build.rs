@@ -1,18 +1,20 @@
-#![crate_name="albino-build"]
-#![crate_type="bin"]
+#![crate_name = "albino-build"]
+#![crate_type = "bin"]
 #![feature(phase)]
 #![unstable]
 
-#[phase(plugin, link)] extern crate log;
+#[phase(plugin, link)]
+extern crate log;
 
+extern crate albino;
 extern crate getopts;
 extern crate whitebase;
-extern crate albino;
+
+use std::io::IoError;
+use std::os;
 
 use getopts::Matches;
-use std::os;
-use std::io::IoError;
-use whitebase::syntax::{Compiler, Assembly, Brainfuck, DT, Ook, Whitespace};
+use whitebase::syntax::{Assembly, Brainfuck, Compiler, Ook, Whitespace, DT};
 
 use albino::command::{BuildCommand, BuildExecutable};
 use albino::util;
@@ -36,17 +38,25 @@ impl BuildExecutable for CommandBody {
         os::set_exit_status(1);
     }
 
-    fn exec<B: Buffer, W: Writer>(&self, _: &Matches, buffer: &mut B, writer: &mut W, target: Option<Target>) {
+    fn exec<B: Buffer, W: Writer>(
+        &self,
+        _: &Matches,
+        buffer: &mut B,
+        writer: &mut W,
+        target: Option<Target>,
+    ) {
         match target {
-            Some(util::Assembly)   => build(buffer, writer, Assembly::new()),
-            Some(util::Brainfuck)  => build(buffer, writer, Brainfuck::new()),
-            Some(util::DT)         => build(buffer, writer, DT::new()),
-            Some(util::Ook)        => build(buffer, writer, Ook::new()),
+            Some(util::Assembly) => build(buffer, writer, Assembly::new()),
+            Some(util::Brainfuck) => build(buffer, writer, Brainfuck::new()),
+            Some(util::DT) => build(buffer, writer, DT::new()),
+            Some(util::Ook) => build(buffer, writer, Ook::new()),
             Some(util::Whitespace) => build(buffer, writer, Whitespace::new()),
             _ => {
-                println!("syntax should be \"asm\", \"bf\", \"dt\", \"ook\" or \"ws\" (default: ws)");
+                println!(
+                    "syntax should be \"asm\", \"bf\", \"dt\", \"ook\" or \"ws\" (default: ws)"
+                );
                 os::set_exit_status(1);
-            },
+            }
         }
     }
 }
@@ -54,9 +64,12 @@ impl BuildExecutable for CommandBody {
 fn main() {
     debug!("executing; cmd=albino-build; args={}", os::args());
 
-    let mut opts = vec!();
-    let cmd = BuildCommand::new("build",
-                                "[-s syntax] [-o output] [file]",
-                                &mut opts, CommandBody);
+    let mut opts = vec![];
+    let cmd = BuildCommand::new(
+        "build",
+        "[-s syntax] [-o output] [file]",
+        &mut opts,
+        CommandBody,
+    );
     cmd.exec();
 }

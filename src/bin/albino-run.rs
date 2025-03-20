@@ -1,19 +1,21 @@
-#![crate_name="albino-run"]
-#![crate_type="bin"]
+#![crate_name = "albino-run"]
+#![crate_type = "bin"]
 #![feature(phase)]
 #![unstable]
 
-#[phase(plugin, link)] extern crate log;
+#[phase(plugin, link)]
+extern crate log;
 
+extern crate albino;
 extern crate getopts;
 extern crate whitebase;
-extern crate albino;
+
+use std::io::{IoError, MemReader, MemWriter};
+use std::os;
 
 use getopts::Matches;
-use std::os;
-use std::io::{IoError, MemReader, MemWriter};
 use whitebase::machine;
-use whitebase::syntax::{Compiler, Assembly, Brainfuck, DT, Ook, Whitespace};
+use whitebase::syntax::{Assembly, Brainfuck, Compiler, Ook, Whitespace, DT};
 
 use albino::command::{RunCommand, RunExecutable};
 use albino::util;
@@ -36,7 +38,7 @@ fn run<B: Buffer, C: Compiler>(buffer: &mut B, syntax: C) {
                 }
                 _ => (),
             }
-        },
+        }
     }
 }
 
@@ -50,15 +52,17 @@ impl RunExecutable for CommandBody {
 
     fn exec<B: Buffer>(&self, _: &Matches, buffer: &mut B, target: Option<Target>) {
         match target {
-            Some(util::Assembly)   => run(buffer, Assembly::new()),
-            Some(util::Brainfuck)  => run(buffer, Brainfuck::new()),
-            Some(util::DT)         => run(buffer, DT::new()),
-            Some(util::Ook)        => run(buffer, Ook::new()),
+            Some(util::Assembly) => run(buffer, Assembly::new()),
+            Some(util::Brainfuck) => run(buffer, Brainfuck::new()),
+            Some(util::DT) => run(buffer, DT::new()),
+            Some(util::Ook) => run(buffer, Ook::new()),
             Some(util::Whitespace) => run(buffer, Whitespace::new()),
             None => {
-                println!("syntax should be \"asm\", \"bf\", \"dt\", \"ook\" or \"ws\" (default: ws)");
+                println!(
+                    "syntax should be \"asm\", \"bf\", \"dt\", \"ook\" or \"ws\" (default: ws)"
+                );
                 os::set_exit_status(1);
-            },
+            }
         }
     }
 }
@@ -66,9 +70,7 @@ impl RunExecutable for CommandBody {
 fn main() {
     debug!("executing; cmd=albino-run; args={}", os::args());
 
-    let mut opts = vec!();
-    let cmd = RunCommand::new("run",
-                              "[-s syntax] [file]",
-                              &mut opts, CommandBody);
+    let mut opts = vec![];
+    let cmd = RunCommand::new("run", "[-s syntax] [file]", &mut opts, CommandBody);
     cmd.exec();
 }
